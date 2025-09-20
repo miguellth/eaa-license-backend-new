@@ -10,7 +10,7 @@
     "build:prod": "echo 'No build step required for Node.js'",
     "deploy": "npm run setup-db && npm start",
     "test": "jest",
-    "postinstall": "node setup-database.js"
+
   },
   "dependencies": {
     "express": "^4.18.2",
