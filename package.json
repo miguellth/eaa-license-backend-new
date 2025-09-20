@@ -9,9 +9,10 @@
     "setup-db": "node setup-database.js",
     "build:prod": "echo 'No build step required for Node.js'",
     "deploy": "npm run setup-db && npm start",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "node setup-database.js"
   },
-  "dependencies":"resend": "^3.0.0" {
+  "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "helmet": "^7.1.0",
@@ -27,7 +28,8 @@
     "uuid": "^9.0.1",
     "validator": "^13.11.0",
     "winston": "^3.11.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "resend": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
