@@ -96,34 +96,11 @@ const setupDatabase = async () => {
       )
     `);
 
-    // Set up plan features
-    await pool.query(`
-      UPDATE licenses SET features = 
-        CASE 
-          WHEN plan = 'starter' THEN '{"scanning": true, "basic_fixes": true, "usage_limit": 50}'::jsonb
-          WHEN plan = 'pro' THEN '{"scanning": true, "basic_fixes": true, "advanced_fixes": true, "priority_support": true, "usage_limit": 500}'::jsonb
-          WHEN plan = 'plus' THEN '{"scanning": true, "basic_fixes": true, "advanced_fixes": true, "priority_support": true, "white_label": true, "api_access": true, "usage_limit": -1}'::jsonb
-        END
-      WHERE features = '{}'
-    `);
-
-    // Set up usage limits based on plan
-    await pool.query(`
-      UPDATE licenses SET monthly_usage_limit = 
-        CASE 
-          WHEN plan = 'starter' THEN 50
-          WHEN plan = 'pro' THEN 500
-          WHEN plan = 'plus' THEN -1
-        END
-      WHERE monthly_usage_limit IS NULL OR monthly_usage_limit IN (1000, 10000, 100000)
-    `);
+    // Plan features will be handled in the application logic
 
     // Create indexes for performance
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_licenses_license_key ON licenses(license_key);
-      CREATE INDEX IF NOT EXISTS idx_licenses_stripe_subscription ON licenses(stripe_subscription_id);
-      CREATE INDEX IF NOT EXISTS idx_license_usage_license_id ON license_usage(license_id);
-      CREATE INDEX IF NOT EXISTS idx_license_usage_created_at ON license_usage(created_at);
       CREATE INDEX IF NOT EXISTS idx_customers_stripe_customer ON customers(stripe_customer_id);
     `);
 
