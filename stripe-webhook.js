@@ -107,8 +107,34 @@ async function handleSuccessfulPayment(session) {
             
             console.log('✅ License created:', licenseKey);
             
-            // Send license key email (optional - you can implement this later)
-            await sendLicenseEmail(customer.email, licenseKey, domain, plan);
+            // Send automated emails
+            try {
+                // Send customer license email
+                await sendCustomerLicenseEmail({
+                    email: customer.email,
+                    name: customer.name
+                }, {
+                    license_key: licenseKey,
+                    plan: plan,
+                    expires_at: new Date(subscription.current_period_end * 1000)
+                });
+                
+                // Send business notification to Miguel
+                await sendBusinessNotification({
+                    email: customer.email,
+                    name: customer.name
+                }, {
+                    license_key: licenseKey,
+                    plan: plan
+                }, {
+                    amount: (session.amount_total / 100).toFixed(2)
+                });
+                
+                console.log('✅ All emails sent successfully');
+            } catch (emailError) {
+                console.error('❌ Email sending failed:', emailError);
+                // Continue processing even if email fails
+            }
             
         } finally {
             client.release();
@@ -216,5 +242,46 @@ async function sendLicenseEmail(email, licenseKey, domain, plan) {
     // TODO: Implement email sending (NodeMailer, SendGrid, etc.)
     // For now, just log the information
 }
+
+// Test endpoint for email functionality
+router.post('/test-email', async (req, res) => {
+    try {
+        console.log('🧪 Testing email system...');
+        
+        // Test license data
+        const testCustomerData = {
+            email: 'miguellieberwirth@freenet.de',
+            name: 'Miguel Test'
+        };
+        
+        const testLicenseData = {
+            license_key: 'EAA-TEST-' + Date.now(),
+            plan: 'pro',
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+        };
+        
+        const testPaymentData = {
+            amount: '49.00'
+        };
+        
+        // Send test emails
+        await sendCustomerLicenseEmail(testCustomerData, testLicenseData);
+        await sendBusinessNotification(testCustomerData, testLicenseData, testPaymentData);
+        
+        console.log('✅ Test emails sent successfully');
+        res.json({ 
+            success: true, 
+            message: 'Test emails sent successfully',
+            license_key: testLicenseData.license_key
+        });
+        
+    } catch (error) {
+        console.error('❌ Test email failed:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
 
 module.exports = router;
